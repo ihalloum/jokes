@@ -1,0 +1,8 @@
+terraform
+terraform/*
+ansible
+ansible/*
+.*
+Jenkinsfile
+setup-ec2.yaml
+Dockerfile

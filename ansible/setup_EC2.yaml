@@ -1,0 +1,73 @@
+---
+- hosts: jokes_ec2
+  user: ubuntu
+  become: true
+  become_user: root
+  tasks:
+    - name: Update apt repo and cache on all Debian/Ubuntu boxes
+      apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
+
+    - name: Upgrade all packages on servers
+      apt: upgrade=dist force_apt_get=yes
+
+    - name: Install required system packages
+      apt: name={{ item }} state=latest update_cache=yes
+      loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common','git', 'python3-pip', 'virtualenv', 'python3-setuptools']
+
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu bionic stable
+        state: present
+
+    - name: Install Docker
+      apt: name={{ item }} state=latest update_cache=yes
+      loop: [ 'docker-ce', 'docker-ce-cli', 'containerd.io']
+
+    - name: Adding existing user ubuntu to group docker
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+
+    - name: Add Jenkins GPG apt Key
+      apt_key:
+        url: https://pkg.jenkins.io/debian-stable/jenkins.io.key
+        state: present
+
+    - name: Add Jenkins Repository
+      apt_repository:
+        repo: deb http://pkg.jenkins.io/debian-stable binary/
+        state: present
+
+    - name: Install Jenkins
+      apt: name={{ item }}  state=latest update_cache=yes
+      loop: ['openjdk-11-jdk', 'jenkins']
+
+    - name: Adding existing user jenkins to group docker
+      user:
+        name: jenkins
+        groups: docker
+        append: yes
+
+    - name: Sleep for 30 seconds and continue with play
+      wait_for: timeout=30
+
+    - name: Restart Jenkins service.
+      ansible.builtin.systemd:
+        state: restarted
+        daemon_reload: yes
+        name: jenkins
+
+    - name: Get init password Jenkins
+      shell: if [ -f /var/lib/jenkins/secrets/initialAdminPassword ];then cat /var/lib/jenkins/secrets/initialAdminPassword ; else echo "No Pass";fi
+      changed_when: false
+      register: result
+
+    - name: Print init password Jenkins
+      debug:
+        var: result.stdout
