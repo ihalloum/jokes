@@ -16,14 +16,14 @@ def get_jokes():
     jokes_dict_arr = []
     try:
         # Send Get request to bash.org.pl.
-        url = "http://bash.org.pl/text"
+        url = "https://web.archive.org/web/20200805170615if_/http://bash.org.pl:80/text"
         bash_org_bl_response = urllib.request.urlopen(url)
         # Read the data (text format) from response.
         data = bash_org_bl_response.read().decode()
         # Regular expression tp parse joke_id , joke_url and joke_text.
-        query = re.compile("(?<=\#)([0-9]+) \((.+)\)\n([^%]*\n*)(?=%)")
+        query = re.compile("(?<=\#)([0-9]+) \((.+)\)\n([^%]*\n*)(?=%)", re.MULTILINE)
         # Store the parsing result in array of tuple.
-        jokes_tuple_arr = query.findall(data, re.MULTILINE)
+        jokes_tuple_arr = query.findall(data)
         # Select first 100 jokes and store int in array of dictionary.
         for i in range(100):
             joke_dict = {}
