@@ -57,8 +57,9 @@ We will need a machine to execute terraform and ansible commands and we will cal
       - Webhook and add this url http://jenkins_ip:8080/github-webhook/ and choose application/json as a content type.
       - Generate a new personal access token with upload packages to GitHub Package Registry privilege.
 5. Add the personal access token to jenkins credentials and name it ghcr.
+6. Edit Jenkinsfile and change environment variables devImage and prodImage.
 
 # Notes:
-1. The Jenkins pipeline will be builded only when you push to dev or main branches.
-2. When you merge dev to master use no fast forward parameters to force Jenkins to build the CD stages.
+1. The Jenkins pipeline will be build only when you push to dev or main branches.
+2. When you merge dev to master use no fast forward (--no-ff) parameters to force Jenkins to build the CD stages.A new commit is necessary because otherwise Jenkins might discard the job if another one has already run for the current commit.
 3. When you build the pipeline from jenkins webapp it will rebuild the last commit so if this commit to dev it will run dev stages and if it for main branch it will run prod stages.
